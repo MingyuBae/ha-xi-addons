@@ -498,7 +498,7 @@ def ezville_loop(config):
                                         onoff = 'ON' if int(packet[current_channel_packet_start_index], 16) & (1 << 0) else 'OFF'
                                         autoonoff = 'ON' if int(packet[current_channel_packet_start_index], 16) & (1 << 3) else 'OFF'
 
-                                        power_num = onoff == 'ON' if '{:.2f}'.format(int(packet[current_channel_packet_start_index + 1: current_channel_packet_start_index + 6], 10) / 10) else 0.0
+                                        power_num = onoff == 'ON' if '{:.1f}'.format(int(packet[current_channel_packet_start_index + 1: current_channel_packet_start_index + 6], 10) / 10) else '0.0'
                                         
                                         await update_state(name, 'power', rid, id, onoff)
                                         await update_state(name, 'auto', rid, id, autoonoff)
