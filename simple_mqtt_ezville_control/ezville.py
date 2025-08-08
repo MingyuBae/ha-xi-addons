@@ -475,7 +475,7 @@ def ezville_loop(config):
                                     rid = int(packet[4], 16)
                                     ## FIXME device sub id 끝 부분이 F(그룹응답)인 경우에만 하단 로직이 작동하도록 처리 필요
                                     # ROOM의 plug 갯수 - KS X 450X 스펙상 그룹 상태 응답 프레임의 length 필드값은 3*채널수+1 값을 가짐 
-                                    spc = (int(packet[8:10], 16) - 1) / 3
+                                    spc = (int(packet[8:10], 16) - 1) // 3
                                 
                                     for id in range(1, spc + 1):
                                         current_channel_packet_start_index = 12 + 3 * (id - 1)
