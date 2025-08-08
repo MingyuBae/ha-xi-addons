@@ -27,7 +27,7 @@ RS485_DEVICE = {
     'plug': {
         'state':    { 'id': '39', 'cmd': '81' },
 
-        'power':    { 'id': '39', 'cmd': '43', 'ack': 'C3' }
+        'power':    { 'id': '39', 'cmd': '43', 'ack': 'C1' }
     },
     'gasvalve': {
         'state':    { 'id': '12', 'cmd': '81' },
@@ -471,12 +471,14 @@ def ezville_loop(config):
                             # plug는 ACK PACKET에 상태 정보가 없으므로 STATE_PACKET만 처리
                             elif name == 'plug' and STATE_PACKET:
                                 if STATE_PACKET:
-                                    # ROOM ID
-                                    rid = int(packet[5], 16)
-                                    # ROOM의 plug 갯수
-                                    spc = int(packet[10:12], 16) 
+                                    # ROOM ID - 그룹 번호로 사용
+                                    rid = int(packet[4], 16)
+                                    ## FIXME device sub id 끝 부분이 F(그룹응답)인 경우에만 하단 로직이 작동하도록 처리 필요
+                                    # ROOM의 plug 갯수 - KS X 450X 스펙상 그룹 상태 응답 프레임의 length 필드값은 3*채널수+1 값을 가짐 
+                                    spc = (int(packet[8:10], 16) - 1) / 3
                                 
                                     for id in range(1, spc + 1):
+                                        current_channel_packet_start_index = 12 + 3 * (id - 1)
                                         discovery_name = '{}_{:0>2d}_{:0>2d}'.format(name, rid, id)
 
                                         if discovery_name not in DISCOVERY_LIST:
@@ -491,27 +493,27 @@ def ezville_loop(config):
                                                 await mqtt_discovery(payload)
                                                 await asyncio.sleep(DISCOVERY_DELAY)  
                                     
-                                        # BIT0: 대기전력 On/Off, BIT1: 자동모드 On/Off
+                                        # bit0: 대기전력 On/Off, bit3: 자동모드 On/Off
                                         # 위와 같지만 일단 on-off 여부만 판단
-                                        onoff = 'ON' if int(packet[7 + 6 * id], 16) > 0 else 'OFF'
-                                        autoonoff = 'ON' if int(packet[6 + 6 * id], 16) > 0 else 'OFF'
-                                        power_num = '{:.2f}'.format(int(packet[8 + 6 * id: 12 + 6 * id], 16) / 100)
+                                        onoff = 'ON' if int(packet[current_channel_packet_start_index], 16) & (1 << 0) else 'OFF'
+                                        autoonoff = 'ON' if int(packet[current_channel_packet_start_index], 16) & (1 << 3) else 'OFF'
+                                        power_num = '{:.2f}'.format(int(packet[current_channel_packet_start_index + 1: current_channel_packet_start_index + 6], 10) / 10)
                                         
                                         await update_state(name, 'power', rid, id, onoff)
-                                        await update_state(name, 'auto', rid, id, onoff)
+                                        await update_state(name, 'auto', rid, id, autoonoff)
                                         await update_state(name, 'current', rid, id, power_num)
                                     
                                         # 직전 처리 State 패킷은 저장
                                         MSG_CACHE[packet[0:10]] = packet[10:]
-                                else:
-                                    # ROOM ID
-                                    rid = int(packet[5], 16)
-                                    # ROOM의 plug 갯수
-                                    sid = int(packet[10:12], 16) 
+                                # else:
+                                #     # ROOM ID
+                                #     rid = int(packet[5], 16)
+                                #     # ROOM의 plug 갯수
+                                #     sid = int(packet[10:12], 16) 
                                 
-                                    onoff = 'ON' if int(packet[13], 16) > 0 else 'OFF'
+                                #     onoff = 'ON' if int(packet[13], 16) > 0 else 'OFF'
                                     
-                                    await update_state(name, 'power', rid, id, onoff)
+                                #     await update_state(name, 'power', rid, id, onoff)
                                         
                             elif name == 'gasvalve':
                                 # Gas Value는 하나라서 강제 설정
