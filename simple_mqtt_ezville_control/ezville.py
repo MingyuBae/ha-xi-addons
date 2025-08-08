@@ -478,7 +478,7 @@ def ezville_loop(config):
                                     spc = (int(packet[8:10], 16) - 1) // 3
                                 
                                     for id in range(1, spc + 1):
-                                        current_channel_packet_start_index = 12 + 3 * (id - 1)
+                                        current_channel_packet_start_index = 12 + 6 * (id - 1)
                                         discovery_name = '{}_{:0>2d}_{:0>2d}'.format(name, rid, id)
 
                                         if discovery_name not in DISCOVERY_LIST:
