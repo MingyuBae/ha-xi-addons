@@ -100,6 +100,7 @@ DISCOVERY_PAYLOAD = {
         'name': 'ezville_plug_{:0>2d}_{:0>2d}_powermeter',
         'stat_t': '~/current/state',
         'dev_cla': 'power',
+        'stat_cla': 'measurement',
         'unit_of_meas': 'W',
         'icon': 'mdi:lightning-bolt'
     } ],
@@ -140,6 +141,13 @@ DISCOVERY_PAYLOAD = {
         'icon': 'mdi:home-circle'
     } ],
     'meter': [
+    {
+        '_intg': 'button',
+        '~': 'ezville/meter_{:0>2d}_{:0>2d}',
+        'name': 'ezville_metter-request_{:0>2d}_{:0>2d}',
+        'cmd_t': '~/request/command',
+        'icon': 'mdi:refresh'
+    },
     {
         '_intg': 'sensor',
         '~': 'ezville/meter_{:0>2d}_{:0>2d}',
@@ -273,7 +281,7 @@ METER_TYPE_OPT = {
 STATE_HEADER = {
     prop['state']['id']: (device, prop['state']['cmd'])
     for device, prop in RS485_DEVICE.items()
-    if 'state' in prop
+        if 'state' in prop
 }
 
 # ACK 확인용 Dictionary
@@ -946,6 +954,17 @@ def ezville_loop(config):
                     
                     if debug:
                         log('[DEBUG] Queued ::: sendcmd: {}, recvcmd: {}, statcmd: {}'.format(sendcmd, recvcmd, statcmd))
+
+                elif device == 'meter':
+                    sendcmd = checksum('F7' + RS485_DEVICE[device]['press']['id'] + '0' + str(sid) + RS485_DEVICE[device]['press']['cmd'] + '00' + '0000')
+                    recvcmd = 'NULL'
+                    statcmd = [key, 'NULL']
+                        
+                    await CMD_QUEUE.put({'sendcmd': sendcmd, 'recvcmd': recvcmd, 'statcmd': statcmd})
+                               
+                    if debug:
+                        log('[DEBUG] Queued ::: sendcmd: {}, recvcmd: {}, statcmd: {}'.format(sendcmd, recvcmd, statcmd))
+
   
                                                 
     # HA에서 전달된 명령을 EW11 패킷으로 전송
