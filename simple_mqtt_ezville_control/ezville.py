@@ -194,7 +194,7 @@ METER_TYPE_OPT = {
                 'icon': 'mdi:gas-cylinder'
             },
             'total_increasing': {
-                'name': 'ezville_metter-total-water',
+                'name': 'ezville_metter-total-gas',
                 'unit_of_meas': 'm³',
                 'icon': 'mdi:meter-gas'
             }
@@ -214,7 +214,7 @@ METER_TYPE_OPT = {
                 'icon': 'mdi:flash'
             },
             'total_increasing': {
-                'name': 'ezville_metter-total-water',
+                'name': 'ezville_metter-total-power',
                 'unit_of_meas': 'kWh',
                 'icon': 'mdi:meter-electric'
             }
@@ -234,7 +234,7 @@ METER_TYPE_OPT = {
                 'icon': 'mdi:water-thermometer'
             },
             'total_increasing': {
-                'name': 'ezville_metter-current-water',
+                'name': 'ezville_metter-current-hotwater',
                 'unit_of_meas': 'm³',
                 'icon': 'mdi:counter'
             },
@@ -752,8 +752,9 @@ def ezville_loop(config):
                                 current_num = current_meter_type_opt['current_num_format'].format(int(packet[10:18], 10) / current_meter_type_opt['current_num_div'])
                                 total_num = current_meter_type_opt['total_num_format'].format(int(packet[18:26], 10) / current_meter_type_opt['total_num_div'])
                                 
-                                await update_state(name, 'current', rid, id, current_num)
-                                await update_state(name, 'total', rid, id, total_num)                            
+                                await update_state(name, 'current', rid, sbc, current_num)
+                                await update_state(name, 'total', rid, sbc, total_num)
+                                
                                 # 직전 처리 State 패킷은 저장
                                 MSG_CACHE[packet[0:10]] = packet[10:]
                                                                                     
