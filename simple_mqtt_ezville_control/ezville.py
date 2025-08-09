@@ -723,7 +723,7 @@ def ezville_loop(config):
                                 
                                 MSG_CACHE[packet[0:10]] = packet[10:]
 
-                            elif name == 'mater' and STATE_PACKET:
+                            elif name == 'meter' and STATE_PACKET:
                                 # 원격 검침
                                 rid = 0
                                 sbc = int(packet[5], 16)
