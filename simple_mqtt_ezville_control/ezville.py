@@ -142,6 +142,7 @@ DISCOVERY_PAYLOAD = {
     } ],
     'meter': [
     {
+        '_item_type': 'request_button',
         '_intg': 'button',
         '~': 'ezville/meter_{:0>2d}_{:0>2d}',
         'name': 'ezville_metter-request_{:0>2d}_{:0>2d}',
@@ -149,6 +150,7 @@ DISCOVERY_PAYLOAD = {
         'icon': 'mdi:refresh'
     },
     {
+        '_item_type': 'current_state',
         '_intg': 'sensor',
         '~': 'ezville/meter_{:0>2d}_{:0>2d}',
         'name': 'ezville_metter-current_{:0>2d}_{:0>2d}',
@@ -159,6 +161,7 @@ DISCOVERY_PAYLOAD = {
         'icon': 'mdi:lightning-bolt'    # 검침기따라 다른 속성
     },
     {
+        '_item_type': 'total_state',
         '_intg': 'sensor',
         '~': 'ezville/meter_{:0>2d}_{:0>2d}',
         'name': 'ezville_metter-total_{:0>2d}_{:0>2d}',
@@ -175,13 +178,16 @@ METER_TYPE_OPT = {
     # 수도
     0x01: {
         'discovery_payload': {
-            'measurement': {
+            'request_button': {
+                'name': 'ezville_metter-request-water',
+            },
+            'current_state': {
                 'name': 'ezville_metter-current-water',
                 'dev_cla': 'water',
                 'unit_of_meas': 'm³',
                 'icon': 'mdi:water'
             },
-            'total_increasing': {
+            'total_state': {
                 'name': 'ezville_metter-total-water',
                 'unit_of_meas': 'm³',
                 'icon': 'mdi:counter'
@@ -195,13 +201,16 @@ METER_TYPE_OPT = {
     # 가스
     0x02: {
         'discovery_payload': {
-            'measurement': {
+            'request_button': {
+                'name': 'ezville_metter-request-gas',
+            },
+            'current_state': {
                 'name': 'ezville_metter-current-gas',
                 'dev_cla': 'gas',
                 'unit_of_meas': 'm³',
                 'icon': 'mdi:gas-cylinder'
             },
-            'total_increasing': {
+            'total_state': {
                 'name': 'ezville_metter-total-gas',
                 'unit_of_meas': 'm³',
                 'icon': 'mdi:meter-gas'
@@ -215,13 +224,16 @@ METER_TYPE_OPT = {
     # 전기
     0x03: {
         'discovery_payload': {
-            'measurement': {
+            'request_button': {
+                'name': 'ezville_metter-request-power',
+            },
+            'current_state': {
                 'name': 'ezville_metter-current-power',
                 'dev_cla': 'power',
                 'unit_of_meas': 'W',
                 'icon': 'mdi:flash'
             },
-            'total_increasing': {
+            'total_state': {
                 'name': 'ezville_metter-total-power',
                 'unit_of_meas': 'kWh',
                 'icon': 'mdi:meter-electric'
@@ -235,13 +247,16 @@ METER_TYPE_OPT = {
     # 온수
     0x04: {
         'discovery_payload': {
-            'measurement': {
+            'request_button': {
+                'name': 'ezville_metter-request-hotwater',
+            },
+            'current': {
                 'name': 'ezville_metter-current-hotwater',
                 'dev_cla': 'water',
                 'unit_of_meas': 'm³',
                 'icon': 'mdi:water-thermometer'
             },
-            'total_increasing': {
+            'total_state': {
                 'name': 'ezville_metter-current-hotwater',
                 'unit_of_meas': 'm³',
                 'icon': 'mdi:counter'
@@ -255,13 +270,16 @@ METER_TYPE_OPT = {
     # 열량
     0x05: {
         'discovery_payload': {
-            'measurement': {
+            'button': {
+                'name': 'ezville_metter-request-heat',
+            },
+            'current': {
                 'name': 'ezville_metter-current-heat',
                 'dev_cla': 'power',
                 'unit_of_meas': 'MW',
                 'icon': 'mdi:home-thermometer'
             },
-            'total_increasing': {
+            'total': {
                 'name': 'ezville_metter-total-heat',
                 'unit_of_meas': 'MW',
                 'icon': 'mdi:counter'
@@ -746,7 +764,9 @@ def ezville_loop(config):
                                     for payload_template in DISCOVERY_PAYLOAD[name]:
                                         payload = payload_template.copy()
                                         # 원격 검침 항목에 맞게 속성 추가
-                                        payload.update(current_meter_type_opt['discovery_payload'][payload['stat_cla']])
+                                        payload.update(current_meter_type_opt['discovery_payload'][payload['_item_type']])
+                                        # 미사용 항목 제거
+                                        payload.pop('_item_type', None)
 
                                         payload['~'] = payload['~'].format(rid, sbc)
                                         payload['name'] = payload['name'].format(rid, sbc)
