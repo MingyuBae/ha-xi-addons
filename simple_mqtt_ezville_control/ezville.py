@@ -38,6 +38,10 @@ RS485_DEVICE = {
         'state':    { 'id': '33', 'cmd': '81' },
 
         'press':    { 'id': '33', 'cmd': '41', 'ack': 'C1' }
+    },
+    'meter': {
+        'state':    { 'id': '30', 'cmd': '81' },
+        'press':    { 'id': '30', 'cmd': '01'}
     }
 }
 
@@ -80,7 +84,8 @@ DISCOVERY_PAYLOAD = {
         'name': 'ezville_plug_{:0>2d}_{:0>2d}',
         'stat_t': '~/power/state',
         'cmd_t': '~/power/command',
-        'icon': 'mdi:leaf'
+        'dev_cla': 'outlet',
+        'icon': 'mdi:power-socket-de'
     },
     {
         '_intg': 'binary_sensor',
@@ -94,7 +99,9 @@ DISCOVERY_PAYLOAD = {
         '~': 'ezville/plug_{:0>2d}_{:0>2d}',
         'name': 'ezville_plug_{:0>2d}_{:0>2d}_powermeter',
         'stat_t': '~/current/state',
-        'unit_of_meas': 'W'
+        'dev_cla': 'power',
+        'unit_of_meas': 'W',
+        'icon': 'mdi:lightning-bolt'
     } ],
     'gasvalve': [ {
         '_intg': 'switch',
@@ -131,8 +138,136 @@ DISCOVERY_PAYLOAD = {
         'name': 'ezville_batch-outing_{:0>2d}_{:0>2d}',
         'stat_t': '~/outing/state',
         'icon': 'mdi:home-circle'
-    } ]
+    } ],
+    'meter': [
+    {
+        '_intg': 'sensor',
+        '~': 'ezville/meter_{:0>2d}_{:0>2d}',
+        'name': 'ezville_metter-current_{:0>2d}_{:0>2d}',
+        'stat_t': '~/current/state',
+        'dev_cla': 'power',             # 검침기따라 다른 속성
+        'stat_cla': 'measurement',
+        'unit_of_meas': 'W',            # 검침기따라 다른 속성
+        'icon': 'mdi:lightning-bolt'    # 검침기따라 다른 속성
+    },
+    {
+        '_intg': 'sensor',
+        '~': 'ezville/meter_{:0>2d}_{:0>2d}',
+        'name': 'ezville_metter-total_{:0>2d}_{:0>2d}',
+        'stat_t': '~/total/state',
+        'dev_cla': 'energy',
+        'stat_cla': 'total_increasing',
+        'unit_of_meas': 'kWh',          # 검침기따라 다른 속성
+        'icon': 'mdi:lightning-bolt'    # 검침기따라 다른 속성
+    }
+    ]
 }
+
+METER_TYPE_OPT = {
+    # 수도
+    0x01: {
+        'discovery_payload': {
+            'measurement': {
+                'name': 'ezville_metter-current-water',
+                'dev_cla': 'water',
+                'unit_of_meas': 'm³',
+                'icon': 'mdi:water'
+            },
+            'total_increasing': {
+                'name': 'ezville_metter-total-water',
+                'unit_of_meas': 'm³',
+                'icon': 'mdi:counter'
+            }
+        },
+        'current_num_div': 1000,
+        'current_num_format': '{:.3f}',
+        'total_num_div': 10,
+        'total_num_format': '{:.1f}'
+    },
+    # 가스
+    0x02: {
+        'discovery_payload': {
+            'measurement': {
+                'name': 'ezville_metter-current-gas',
+                'dev_cla': 'gas',
+                'unit_of_meas': 'm³',
+                'icon': 'mdi:gas-cylinder'
+            },
+            'total_increasing': {
+                'name': 'ezville_metter-total-water',
+                'unit_of_meas': 'm³',
+                'icon': 'mdi:meter-gas'
+            }
+        },
+        'current_num_div': 1000,
+        'current_num_format': '{:.3f}',
+        'total_num_div': 10,
+        'total_num_format': '{:.1f}'
+    },
+    # 전기
+    0x03: {
+        'discovery_payload': {
+            'measurement': {
+                'name': 'ezville_metter-current-power',
+                'dev_cla': 'power',
+                'unit_of_meas': 'W',
+                'icon': 'mdi:flash'
+            },
+            'total_increasing': {
+                'name': 'ezville_metter-total-water',
+                'unit_of_meas': 'kWh',
+                'icon': 'mdi:meter-electric'
+            }
+        },
+        'current_num_div': 1,
+        'current_num_format': '{:.0f}',
+        'total_num_div': 10,
+        'total_num_format': '{:.1f}'
+    },
+    # 온수
+    0x04: {
+        'discovery_payload': {
+            'measurement': {
+                'name': 'ezville_metter-current-hotwater',
+                'dev_cla': 'water',
+                'unit_of_meas': 'm³',
+                'icon': 'mdi:water-thermometer'
+            },
+            'total_increasing': {
+                'name': 'ezville_metter-current-water',
+                'unit_of_meas': 'm³',
+                'icon': 'mdi:counter'
+            },
+        },
+        'current_num_div': 1000,
+        'current_num_format': '{:.3f}',
+        'total_num_div': 10,
+        'total_num_format': '{:.1f}'
+    },
+    # 열량
+    0x05: {
+        'discovery_payload': {
+            'measurement': {
+                'name': 'ezville_metter-current-heat',
+                'dev_cla': 'power',
+                'unit_of_meas': 'MW',
+                'icon': 'mdi:home-thermometer'
+            },
+            'total_increasing': {
+                'name': 'ezville_metter-total-heat',
+                'unit_of_meas': 'MW',
+                'icon': 'mdi:counter'
+            }
+        },
+        'current_num_div': 1000,
+        'current_num_format': '{:.3f}',
+        'total_num_div': 100,
+        'total_num_format': '{:.2f}'
+    }
+}
+
+
+
 
 # STATE 확인용 Dictionary
 STATE_HEADER = {
@@ -586,6 +721,40 @@ def ezville_loop(config):
                                 await update_state(name, 'group', rid, sbc, grouponoff)
                                 await update_state(name, 'outing', rid, sbc, outingonoff)
                                 
+                                MSG_CACHE[packet[0:10]] = packet[10:]
+
+                            elif name == 'mater' and STATE_PACKET:
+                                # 원격 검침
+                                rid = 0
+                                sbc = int(packet[5], 16)
+
+                                current_meter_type_opt = METER_TYPE_OPT[int(packet[4:6], 16)]
+                                
+                                discovery_name = '{}_{:0>2d}_{:0>2d}'.format(name, rid, sbc)
+                                
+                                if discovery_name not in DISCOVERY_LIST:
+                                    DISCOVERY_LIST.append(discovery_name)
+                                    
+                                    for payload_template in DISCOVERY_PAYLOAD[name]:
+                                        payload = payload_template.copy()
+                                        # 원격 검침 항목에 맞게 속성 추가
+                                        payload.update(current_meter_type_opt['discovery_payload'][payload['stat_cla']])
+
+                                        payload['~'] = payload['~'].format(rid, sbc)
+                                        payload['name'] = payload['name'].format(rid, sbc)
+                                   
+                                        # 장치 등록 후 DISCOVERY_DELAY초 후에 State 업데이트
+                                        await mqtt_discovery(payload)
+                                        await asyncio.sleep(DISCOVERY_DELAY)           
+
+                                # bit0: 대기전력 On/Off, bit3: 자동모드 On/Off
+                                # 위와 같지만 일단 on-off 여부만 판단
+                                current_num = current_meter_type_opt['current_num_format'].format(int(packet[10:18], 10) / current_meter_type_opt['current_num_div'])
+                                total_num = current_meter_type_opt['total_num_format'].format(int(packet[18:26], 10) / current_meter_type_opt['total_num_div'])
+                                
+                                await update_state(name, 'current', rid, id, current_num)
+                                await update_state(name, 'total', rid, id, total_num)                            
+                                # 직전 처리 State 패킷은 저장
                                 MSG_CACHE[packet[0:10]] = packet[10:]
                                                                                     
                 RESIDUE = ''
