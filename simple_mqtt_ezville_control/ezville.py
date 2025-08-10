@@ -953,7 +953,7 @@ def ezville_loop(config):
 #                                if debug:
 #                                    log('[DEBUG] Queued ::: sendcmd: {}, recvcmd: {}'.format(sendcmd, recvcmd))
 
-                elif device == 'light':                         
+                elif device == 'light':
                     pwr = '01' if value == 'ON' else '00'
                         
                     sendcmd = checksum('F7' + RS485_DEVICE[device]['power']['id'] + '1' + str(idx) + RS485_DEVICE[device]['power']['cmd'] + '030' + str(sid) + pwr + '000000')
@@ -965,8 +965,8 @@ def ezville_loop(config):
                     if debug:
                         log('[DEBUG] Queued ::: sendcmd: {}, recvcmd: {}, statcmd: {}'.format(sendcmd, recvcmd, statcmd))
                                 
-                elif device == 'plug':                         
-                    pwr = '10' if value == 'ON' else '11'
+                elif device == 'plug':
+                    pwr = '11' if value == 'ON' else '10'
 
                     sendcmd = checksum('F7' + RS485_DEVICE[device]['power']['id'] + f'{idx:X}' + f'{sid:X}' + RS485_DEVICE[device]['power']['cmd'] + '01' + pwr + '0000')
                     recvcmd = 'F7' + RS485_DEVICE[device]['power']['id'] + f'{idx:X}' + f'{sid:X}' + RS485_DEVICE[device]['power']['ack']
