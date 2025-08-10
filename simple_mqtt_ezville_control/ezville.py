@@ -261,7 +261,7 @@ METER_TYPE_OPT = {
                 'icon': 'mdi:water-thermometer'
             },
             'total_state': {
-                'name': 'ezville_metter-current-hotwater',
+                'name': 'ezville_metter-total-hotwater',
                 'dev_cla': 'water',
                 'unit_of_meas': 'm³',
                 'icon': 'mdi:counter'
@@ -821,6 +821,17 @@ def ezville_loop(config):
                 # 장치 등록 후 DISCOVERY_DELAY초 후에 State 업데이트
                 await mqtt_discovery(payload)
                 await asyncio.sleep(DISCOVERY_DELAY)
+            
+            if 'meter_00_15' not in DISCOVERY_LIST:
+                # 검침기 일괄조회 버튼 등록
+                DISCOVERY_LIST.append('meter_00_15')
+
+                payload = METER_TYPE_OPT[0x0F]['discovery_payload']['request_button'].copy()
+                
+                # 장치 등록 후 DISCOVERY_DELAY초 후에 State 업데이트
+                await mqtt_discovery(payload)
+                await asyncio.sleep(DISCOVERY_DELAY)
+
 
         current_num = current_meter_type_opt['current_num_format'].format(int(data[0:6], 10) / current_meter_type_opt['current_num_div'])
         total_num = current_meter_type_opt['total_num_format'].format(int(data[6:14], 10) / current_meter_type_opt['total_num_div'])
