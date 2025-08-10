@@ -1036,44 +1036,47 @@ def ezville_loop(config):
                                                 
     # HA에서 전달된 명령을 EW11 패킷으로 전송
     async def send_to_ew11(send_data):
-            
-        for i in range(CMD_RETRY_COUNT):
-            if ew11_log:
-                log('[SIGNAL] 신호 전송: {}'.format(send_data))
-                        
-            if comm_mode == 'mqtt':
-                mqtt_client.publish(EW11_SEND_TOPIC, bytes.fromhex(send_data['sendcmd']))
-            else:
-                nonlocal soc
-                try:
-                    soc.sendall(bytes.fromhex(send_data['sendcmd']))
-                except OSError:
-                    soc.close()
-                    soc = initiate_socket(soc)
-                    soc.sendall(bytes.fromhex(send_data['sendcmd']))
-            if debug:                     
-                log('[DEBUG] Iter. No.: ' + str(i + 1) + ', Target: ' + send_data['statcmd'][1] + ', Current: ' + DEVICE_STATE.get(send_data['statcmd'][0]))
-             
-            # Ack나 State 업데이트가 불가한 경우 한번만 명령 전송 후 Return
-            if send_data['statcmd'][1] == 'NULL':
-                return
-      
-            # FIRST_WAITTIME초는 ACK 처리를 기다림 (초당 30번 데이터가 들어오므로 ACK 못 받으면 후속 처리 시작)
-            if i == 0:
-                await asyncio.sleep(FIRST_WAITTIME)
-            # 이후에는 정해진 간격 혹은 Random Backoff 시간 간격을 주고 ACK 확인
-            else:
-                if RANDOM_BACKOFF:
-                    await asyncio.sleep(random.randint(0, int(CMD_INTERVAL * 1000))/1000)    
+        try:
+            for i in range(CMD_RETRY_COUNT):
+                if ew11_log:
+                    log('[SIGNAL] 신호 전송: {}'.format(send_data))
+                            
+                if comm_mode == 'mqtt':
+                    mqtt_client.publish(EW11_SEND_TOPIC, bytes.fromhex(send_data['sendcmd']))
                 else:
-                    await asyncio.sleep(CMD_INTERVAL)
-              
-            if send_data['statcmd'][1] == DEVICE_STATE.get(send_data['statcmd'][0]):
-                return
+                    nonlocal soc
+                    try:
+                        soc.sendall(bytes.fromhex(send_data['sendcmd']))
+                    except OSError:
+                        soc.close()
+                        soc = initiate_socket(soc)
+                        soc.sendall(bytes.fromhex(send_data['sendcmd']))
+                if debug:                     
+                    log('[DEBUG] Iter. No.: ' + str(i + 1) + ', Target: ' + send_data['statcmd'][1] + ', Current: ' + DEVICE_STATE.get(send_data['statcmd'][0]))
+                
+                # Ack나 State 업데이트가 불가한 경우 한번만 명령 전송 후 Return
+                if send_data['statcmd'][1] == 'NULL':
+                    return
+        
+                # FIRST_WAITTIME초는 ACK 처리를 기다림 (초당 30번 데이터가 들어오므로 ACK 못 받으면 후속 처리 시작)
+                if i == 0:
+                    await asyncio.sleep(FIRST_WAITTIME)
+                # 이후에는 정해진 간격 혹은 Random Backoff 시간 간격을 주고 ACK 확인
+                else:
+                    if RANDOM_BACKOFF:
+                        await asyncio.sleep(random.randint(0, int(CMD_INTERVAL * 1000))/1000)    
+                    else:
+                        await asyncio.sleep(CMD_INTERVAL)
+                
+                if send_data['statcmd'][1] == DEVICE_STATE.get(send_data['statcmd'][0]):
+                    return
 
-        if ew11_log:
-            log('[SIGNAL] {}회 명령을 재전송하였으나 수행에 실패했습니다.. 다음의 Queue 삭제: {}'.format(str(CMD_RETRY_COUNT),send_data))
-            return
+            if ew11_log:
+                log('[SIGNAL] {}회 명령을 재전송하였으나 수행에 실패했습니다.. 다음의 Queue 삭제: {}'.format(str(CMD_RETRY_COUNT),send_data))
+                return
+        except Exception as e:
+            log(f'패킷 발송 중 오류 발생 - send_data: {send_data}, error: {str(e)}')
+            log(traceback.format_exc())
         
                                                 
     # EW11 동작 상태를 체크해서 필요시 리셋 실시
