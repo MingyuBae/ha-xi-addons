@@ -1052,7 +1052,7 @@ def ezville_loop(config):
                         soc = initiate_socket(soc)
                         soc.sendall(bytes.fromhex(send_data['sendcmd']))
                 if debug:                     
-                    log('[DEBUG] Iter. No.: ' + str(i + 1) + ', Target: ' + send_data['statcmd'][1] + ', Current: ' + DEVICE_STATE.get(send_data['statcmd'][0]))
+                    log('[DEBUG] Iter. No.: ' + str(i + 1) + ', Target: ' + send_data['statcmd'][1] + ', Current: ' + str(DEVICE_STATE.get(send_data['statcmd'][0])))
                 
                 # Ack나 State 업데이트가 불가한 경우 한번만 명령 전송 후 Return
                 if send_data['statcmd'][1] == 'NULL':
