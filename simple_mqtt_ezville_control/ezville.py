@@ -251,7 +251,7 @@ METER_TYPE_OPT = {
             'request_button': {
                 'name': 'ezville_metter-request-hotwater',
             },
-            'current': {
+            'current_state': {
                 'name': 'ezville_metter-current-hotwater',
                 'dev_cla': 'water',
                 'unit_of_meas': 'm³',
@@ -271,16 +271,16 @@ METER_TYPE_OPT = {
     # 열량
     0x05: {
         'discovery_payload': {
-            'button': {
+            'request_button': {
                 'name': 'ezville_metter-request-heat',
             },
-            'current': {
+            'current_state': {
                 'name': 'ezville_metter-current-heat',
                 'dev_cla': 'power',
                 'unit_of_meas': 'MW',
                 'icon': 'mdi:home-thermometer'
             },
-            'total': {
+            'total_state': {
                 'name': 'ezville_metter-total-heat',
                 'unit_of_meas': 'MW',
                 'icon': 'mdi:counter'
@@ -290,6 +290,18 @@ METER_TYPE_OPT = {
         'current_num_format': '{:.3f}',
         'total_num_div': 100,
         'total_num_format': '{:.2f}'
+    },
+    # 일괄조회
+    0x0F: {
+        'discovery_payload': {
+            'request_button': {
+                '_intg': 'button',
+                '~': 'ezville/meter_{:0>2d}_{:0>2d}',
+                'name': 'ezville_metter-request-all',
+                'cmd_t': '~/request/command',
+                'icon': 'mdi:refresh'
+            }
+        }
     }
 }
 
@@ -803,7 +815,7 @@ def ezville_loop(config):
                                         
                 # 장치 등록 후 DISCOVERY_DELAY초 후에 State 업데이트
                 await mqtt_discovery(payload)
-                await asyncio.sleep(DISCOVERY_DELAY)           
+                await asyncio.sleep(DISCOVERY_DELAY)
 
         current_num = current_meter_type_opt['current_num_format'].format(int(data[0:6], 10) / current_meter_type_opt['current_num_div'])
         total_num = current_meter_type_opt['total_num_format'].format(int(data[6:14], 10) / current_meter_type_opt['total_num_div'])
