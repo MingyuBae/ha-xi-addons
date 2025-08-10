@@ -28,7 +28,7 @@ RS485_DEVICE = {
     'plug': {
         'state':    { 'id': '39', 'cmd': '81' },
 
-        'power':    { 'id': '39', 'cmd': '43', 'ack': 'C1' }
+        'power':    { 'id': '39', 'cmd': '42', 'ack': 'C1' }
     },
     'gasvalve': {
         'state':    { 'id': '12', 'cmd': '81' },
@@ -966,14 +966,14 @@ def ezville_loop(config):
                         log('[DEBUG] Queued ::: sendcmd: {}, recvcmd: {}, statcmd: {}'.format(sendcmd, recvcmd, statcmd))
                                 
                 elif device == 'plug':                         
-                    pwr = '01' if value == 'ON' else '00'
+                    pwr = '10' if value == 'ON' else '11'
 
-                    sendcmd = checksum('F7' + RS485_DEVICE[device]['power']['id'] + '1' + str(idx) + RS485_DEVICE[device]['power']['cmd'] + '020' + str(sid) + pwr + '0000')
-                    recvcmd = 'F7' + RS485_DEVICE[device]['power']['id'] + '1' + str(idx) + RS485_DEVICE[device]['power']['ack']
+                    sendcmd = checksum('F7' + RS485_DEVICE[device]['power']['id'] + f'{idx:X}' + f'{sid:X}' + RS485_DEVICE[device]['power']['cmd'] + '01' + pwr + '0000')
+                    recvcmd = 'F7' + RS485_DEVICE[device]['power']['id'] + f'{idx:X}' + f'{sid:X}' + RS485_DEVICE[device]['power']['ack']
                     statcmd = [key, value]
-                        
+                    
                     await CMD_QUEUE.put({'sendcmd': sendcmd, 'recvcmd': recvcmd, 'statcmd': statcmd})
-                               
+                    
                     if debug:
                         log('[DEBUG] Queued ::: sendcmd: {}, recvcmd: {}, statcmd: {}'.format(sendcmd, recvcmd, statcmd))
                                 
@@ -1024,6 +1024,7 @@ def ezville_loop(config):
 
                 elif device == 'meter':
                     sendcmd = checksum('F7' + RS485_DEVICE[device]['press']['id'] + '0' + f'{sid:X}' + RS485_DEVICE[device]['press']['cmd'] + '00' + '0000')
+                    # 검침 요청은 ACK 없이 바로 상태값 전달
                     recvcmd = 'NULL'
                     statcmd = [key, 'NULL']
                         
