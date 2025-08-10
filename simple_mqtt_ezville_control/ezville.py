@@ -190,6 +190,7 @@ METER_TYPE_OPT = {
             },
             'total_state': {
                 'name': 'ezville_metter-total-water',
+                'dev_cla': 'water',
                 'unit_of_meas': 'm³',
                 'icon': 'mdi:counter'
             }
@@ -213,6 +214,7 @@ METER_TYPE_OPT = {
             },
             'total_state': {
                 'name': 'ezville_metter-total-gas',
+                'dev_cla': 'gas',
                 'unit_of_meas': 'm³',
                 'icon': 'mdi:meter-gas'
             }
@@ -236,6 +238,7 @@ METER_TYPE_OPT = {
             },
             'total_state': {
                 'name': 'ezville_metter-total-power',
+                'dev_cla': 'energy',
                 'unit_of_meas': 'kWh',
                 'icon': 'mdi:meter-electric'
             }
@@ -259,6 +262,7 @@ METER_TYPE_OPT = {
             },
             'total_state': {
                 'name': 'ezville_metter-current-hotwater',
+                'dev_cla': 'water',
                 'unit_of_meas': 'm³',
                 'icon': 'mdi:counter'
             },
@@ -282,7 +286,8 @@ METER_TYPE_OPT = {
             },
             'total_state': {
                 'name': 'ezville_metter-total-heat',
-                'unit_of_meas': 'MW',
+                'dev_cla': 'energy',
+                'unit_of_meas': 'MWh',
                 'icon': 'mdi:counter'
             }
         },
@@ -296,7 +301,7 @@ METER_TYPE_OPT = {
         'discovery_payload': {
             'request_button': {
                 '_intg': 'button',
-                '~': 'ezville/meter_{:0>2d}_{:0>2d}',
+                '~': 'ezville/meter_00_15',
                 'name': 'ezville_metter-request-all',
                 'cmd_t': '~/request/command',
                 'icon': 'mdi:refresh'
@@ -769,7 +774,7 @@ def ezville_loop(config):
                                         # 전체 검침 상태 응답 (모든 검침기 상태 포함 - 수도, 가스, 전기, 온수, 열량 순))
                                         # 데이터 순서 - 순시치: 3자리, 누적량: 4자리 (총 7자리) * 검침기 수
                                         meter_num = (int(packet[8:10], 16)) // 7
-                                        for meter_type_idx in range(1, meter_num):
+                                        for meter_type_idx in range(1, meter_num + 1):
                                             dev_sub_id = '0' + str(meter_type_idx)
                                             data = packet[10 + ((meter_type_idx - 1) * 14): 10 + (meter_type_idx * 14)]
                                             await rev_meter_state(dev_sub_id, data)
@@ -1007,7 +1012,7 @@ def ezville_loop(config):
                         log('[DEBUG] Queued ::: sendcmd: {}, recvcmd: {}, statcmd: {}'.format(sendcmd, recvcmd, statcmd))
 
                 elif device == 'meter':
-                    sendcmd = checksum('F7' + RS485_DEVICE[device]['press']['id'] + '0' + str(sid) + RS485_DEVICE[device]['press']['cmd'] + '00' + '0000')
+                    sendcmd = checksum('F7' + RS485_DEVICE[device]['press']['id'] + '0' + f'{sid:X}' + RS485_DEVICE[device]['press']['cmd'] + '00' + '0000')
                     recvcmd = 'NULL'
                     statcmd = [key, 'NULL']
                         
