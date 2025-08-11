@@ -197,8 +197,8 @@ METER_TYPE_OPT = {
         },
         'current_num_div': 1000,
         'current_num_format': '{:.3f}',
-        'total_num_div': 10,
-        'total_num_format': '{:.1f}'
+        'total_num_div': 100,
+        'total_num_format': '{:.2f}'
     },
     # 가스
     0x02: {
@@ -221,8 +221,8 @@ METER_TYPE_OPT = {
         },
         'current_num_div': 1000,
         'current_num_format': '{:.3f}',
-        'total_num_div': 10,
-        'total_num_format': '{:.1f}'
+        'total_num_div': 100,
+        'total_num_format': '{:.2f}'
     },
     # 전기
     0x03: {
@@ -269,8 +269,8 @@ METER_TYPE_OPT = {
         },
         'current_num_div': 1000,
         'current_num_format': '{:.3f}',
-        'total_num_div': 10,
-        'total_num_format': '{:.1f}'
+        'total_num_div': 100,
+        'total_num_format': '{:.2f}'
     },
     # 열량
     0x05: {
